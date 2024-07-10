@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "client": "vue-cli-service serve",
+    "client": "vue-cli-service serve --port 8085",
     "server": "nodemon ./server/index.js",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"

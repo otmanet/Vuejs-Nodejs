@@ -24,7 +24,15 @@
             </div>
           </div>
           <div class="w-100" v-if="currentStepIndex > 0">
-            <component :is="currentStep"> </component>
+            <component
+              :is="currentStep"
+              :sharedData="sharedData"
+              :clickSuivant="clickSuivant"
+              :errorsFormOne="errorsFormOne"
+              :errorsFormTwo="errorsFormTwo"
+              @update-shared-data="updateSharedData"
+            >
+            </component>
           </div>
           <div
             class="card-button w-100 d-flex justify-content-center align-items-center p-4"
@@ -91,6 +99,23 @@ export default {
         "AssistanceAuto3",
       ],
       currentStepIndex: 0,
+      // increment this object for send in request :
+      sharedData: {
+        nom: "",
+        pernom: "",
+        date_naissance: "",
+        lieu_naissance: "",
+        email: "",
+        tel: "",
+        code_postal: "",
+        ville: "",
+        situations_familiales: "",
+        profession: "",
+        date_mise_circulation: "",
+        modele: "",
+        marque: "",
+        immatriculation: "",
+      },
       description: `
         Bienvenue. <br>
         Notre  <span style="font-family: 'Gilmer Bold','Gilmer Regular',sans-serif;">assistance auto</span> est conçu pour vous offrir une tranquillité <br> d’esprit totale lors de vos déplacements. Nous sommes disponibles
@@ -103,6 +128,24 @@ export default {
          le numéro 22005579 Sous le contrôle de l’Autorité de Contrôle Prudentiel et de Résolution (ACPR) – 4 place de<br>
           Budapest 75009 PARIS.
         `,
+      // use this boolean for check user have access to get second form
+      clickSuivant: true,
+      errorsFormOne: {
+        nom: false,
+        pernom: false,
+        date_naissance: false,
+        email: false,
+        tel: false,
+        code_postal: false,
+        ville: false,
+        situations_familiales: false,
+      },
+      errorsFormTwo: {
+        date_mise_circulation: false,
+        modele: false,
+        marque: false,
+        immatriculation: false,
+      },
     };
   },
   computed: {
@@ -117,8 +160,12 @@ export default {
   },
   methods: {
     // function for switch to second step
+    //  clickSuivant for check form validation return true for get second form
     Suivant() {
-      this.currentStepIndex += 1;
+      this.checkValidationFormOne();
+      if (this.clickSuivant) {
+        this.currentStepIndex += 1;
+      }
     },
     // function for switch to previous step
     Precedent() {
@@ -126,14 +173,127 @@ export default {
         this.currentStepIndex = 0;
       } else {
         this.currentStepIndex -= 1;
+        if (this.currentStepIndex === 1) {
+          (this.errorsFormOne = {
+            nom: false,
+            pernom: false,
+            date_naissance: false,
+            email: false,
+            tel: false,
+            code_postal: false,
+            ville: false,
+            situations_familiales: false,
+          }),
+            Object.assign(this.sharedData, {
+              nom: "",
+              pernom: "",
+              date_naissance: "",
+              lieu_naissance: "",
+              email: "",
+              tel: "",
+              code_postal: "",
+              ville: "",
+              situations_familiales: "",
+              profession: "",
+            });
+        }
+        if (this.currentStepIndex === 2) {
+          this.errorsFormTwo = {
+            date_mise_circulation: false,
+            modele: false,
+            marque: false,
+            immatriculation: false,
+          };
+          Object.assign(this.sharedData, {
+            date_mise_circulation: "",
+            modele: "",
+            marque: "",
+            immatriculation: "",
+          });
+        }
       }
     },
+    updateSharedData(event) {
+      if (this.currentStepIndex == 2) {
+        this.errorsFormOne = event.errors;
+      }
+      if (this.currentStepIndex == 3) {
+        this.errorsFormTwo = event.errors;
+      }
+      this.sharedData = event.data;
+      if (this.clickSuivant == false && this.currentStepIndex == 2) {
+        this.checkValidationFormOne();
+      }
+      if (this.clickSuivant == false && this.currentStepIndex == 3) {
+        this.checkValidationFormTwo();
+      }
+    },
+    checkValidationFormOne() {
+      this.clickSuivant = true;
+      for (const key in this.errorsFormOne) {
+        if (this.sharedData[key] == "" && this.currentStepIndex >= 2) {
+          this.clickSuivant = false;
+          this.errorsFormOne[key] = true;
+        }
+      }
+    },
+    checkValidationFormTwo() {
+      this.clickSuivant = true;
+      for (const key in this.errorsFormTwo) {
+        if (this.sharedData[key] == "" && this.currentStepIndex >= 2) {
+          this.clickSuivant = false;
+          this.errorsFormTwo[key] = true;
+        }
+      }
+    },
+
     Envoyer() {
-      AssistanceAutoServices.postInformation()
+      this.checkValidationFormTwo();
+      if (this.clickSuivant == false) {
+        return;
+      }
+      AssistanceAutoServices.postInformation(this.sharedData)
         .then((response) => {
-          console.log("response :", response);
+          if (response.data.success) {
+            this.errorsFormOne = {
+              nom: false,
+              pernom: false,
+              date_naissance: false,
+              email: false,
+              tel: false,
+              code_postal: false,
+              ville: false,
+              situations_familiales: false,
+            };
+            this.errorsFormTwo = {
+              date_mise_circulation: false,
+              modele: false,
+              marque: false,
+              immatriculation: false,
+            };
+            (this.sharedData = {
+              nom: "",
+              pernom: "",
+              date_naissance: "",
+              lieu_naissance: "",
+              email: "",
+              tel: "",
+              code_postal: "",
+              ville: "",
+              situations_familiales: "",
+              profession: "",
+              date_mise_circulation: "",
+              modele: "",
+              marque: "",
+              immatriculation: "",
+            }),
+              (this.clickSuivant = true);
+            this.currentStepIndex = 0;
+            alert(response.data.message);
+          }
         })
         .catch((e) => {
+          alert("Quelque chose s'est mal passé, veuillez réessayer plus tard.");
           console.log(e);
         });
     },
@@ -207,6 +367,14 @@ export default {
   color: #ffffff;
   opacity: 1;
 }
+.span-error {
+  text-align: center;
+  color: red;
+  font-family: "Gilmer Bold", "Gilmer Regular", sans-serif;
+}
+.input-error {
+  border: 2px solid red;
+}
 @media (max-width: 768px) {
   .card-style {
     width: 100%;
@@ -225,23 +393,6 @@ export default {
   }
   .info text {
     width: 762px;
-  }
-  .info .text span,
-  .span-button {
-    font-size: 12px;
-    font-weight: 15px;
-  }
-  .card-button .button-suivant {
-    width: 30%;
-    font-size: 12px;
-  }
-  .card-button .button-precedent {
-    width: 30%;
-    font-size: 12px;
-  }
-  span {
-    font-size: 12px;
-    font-weight: 15px;
   }
   .img-etape {
     width: 80%;
