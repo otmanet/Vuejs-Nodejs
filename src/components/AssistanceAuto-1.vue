@@ -29,6 +29,7 @@
 export default {
   created() {},
   name: "AssistanceAuto1",
+ 
   data() {
     return {
       description1: `
