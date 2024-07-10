@@ -1,8 +1,10 @@
 const asyncHandler = require("express-async-handler");
 
 const postAssistanceAuto = asyncHandler(async (req, res) => {
+  console.log(req.body);
   return res.status(200).json({
-    message: "Added successfully",
+    success: true,
+    message: "Ajouté avec succès",
   });
 });
 
