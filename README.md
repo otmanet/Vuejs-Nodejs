@@ -1,6 +1,6 @@
-# forntend
+# Vuejs/Expressjs/Sqlite
 
-Hey in this project use technologie vuejs and Nodejs(expressjs) for insert data in database from sqlLite.
+In this project, I am using Vue.js and Node.js (Express.js) to insert data into a SQLite database
 
 ## command for run server (expressjs)
 
