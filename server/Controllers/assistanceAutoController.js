@@ -1,11 +1,10 @@
 const asyncHandler = require("express-async-handler");
+const { AssistanceAuto } = require("../models/AssistanceAuto ");
 
 const postAssistanceAuto = asyncHandler(async (req, res) => {
-  console.log(req.body);
-  return res.status(200).json({
-    success: true,
-    message: "Ajouté avec succès",
-  });
+  const assistanceAutoModel = new AssistanceAuto(req.db);
+  const insertedData = await assistanceAutoModel.save(req.body);
+  res.status(201).json(insertedData);
 });
 
 module.exports = {

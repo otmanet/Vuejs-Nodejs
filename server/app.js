@@ -4,8 +4,13 @@ const path = require("path");
 const { errorHandler } = require("./middleware/errorHandler.js");
 const app = express();
 const indexRoutes = require("./Routes/index.routes.js");
-
+const connectDB = require("./db");
+const db = connectDB;
 app.disable("x-powered-by");
+app.use((req, res, next) => {
+  req.db = db;
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
