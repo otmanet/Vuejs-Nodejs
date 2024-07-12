@@ -59,6 +59,11 @@
               <span class="span-button">Envoyer</span>
             </button>
           </div>
+          <div class="w-100 d-flex justify-content-center" v-if="added">
+            <div class="alert alert-success" role="alert">
+              Ajouté avec succès
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -99,6 +104,8 @@ export default {
         "AssistanceAuto3",
       ],
       currentStepIndex: 0,
+      // boolean used for display alert :
+      added: false,
       // increment this object for send in request :
       sharedData: {
         nom: "",
@@ -213,14 +220,17 @@ export default {
         }
       }
     },
+    /* this function related with child for when change data in form  , change in object inside parent realtime*/
     updateSharedData(event) {
+      this.sharedData = event.data;
+      // condition for check validation the first Form
       if (this.currentStepIndex == 2) {
         this.errorsFormOne = event.errors;
       }
+      // condition for check validation the second Form
       if (this.currentStepIndex == 3) {
         this.errorsFormTwo = event.errors;
       }
-      this.sharedData = event.data;
       if (this.clickSuivant == false && this.currentStepIndex == 2) {
         this.checkValidationFormOne();
       }
@@ -228,6 +238,7 @@ export default {
         this.checkValidationFormTwo();
       }
     },
+    /* for check  all fields in form one not empty and give user access to switch another form*/
     checkValidationFormOne() {
       this.clickSuivant = true;
       for (const key in this.errorsFormOne) {
@@ -237,6 +248,7 @@ export default {
         }
       }
     },
+    /* for check  all fields in form one not empty and give user access to send data to backend */
     checkValidationFormTwo() {
       this.clickSuivant = true;
       for (const key in this.errorsFormTwo) {
@@ -246,15 +258,17 @@ export default {
         }
       }
     },
-
+    /* function for send object  to server for added data in databases*/
     Envoyer() {
       this.checkValidationFormTwo();
       if (this.clickSuivant == false) {
         return;
       }
+
       AssistanceAutoServices.postInformation(this.sharedData)
         .then((response) => {
           if (response.data.success) {
+            // when get response success initial the fields empty for insert again
             this.errorsFormOne = {
               nom: false,
               pernom: false,
@@ -271,7 +285,7 @@ export default {
               marque: false,
               immatriculation: false,
             };
-            (this.sharedData = {
+            this.sharedData = {
               nom: "",
               pernom: "",
               date_naissance: "",
@@ -286,14 +300,22 @@ export default {
               modele: "",
               marque: "",
               immatriculation: "",
-            }),
-              (this.clickSuivant = true);
+            };
+            this.clickSuivant = true;
             this.currentStepIndex = 0;
-            alert(response.data.message);
+            /* for diplay alert to tell user data insert successfully, and hide after 1.5s*/
+            this.added = true;
+            setTimeout(() => {
+              this.added = false;
+            }, 1500);
           }
         })
         .catch((e) => {
-          alert("Quelque chose s'est mal passé, veuillez réessayer plus tard.");
+          this.clickSuivant = true;
+          this.currentStepIndex = 0;
+          console.log(
+            "Quelque chose s'est mal passé, veuillez réessayer plus tard."
+          );
           console.log(e);
         });
     },
@@ -375,6 +397,7 @@ export default {
 .input-error {
   border: 2px solid red;
 }
+/* use media query for make page responsive*/
 @media (max-width: 768px) {
   .card-style {
     width: 100%;

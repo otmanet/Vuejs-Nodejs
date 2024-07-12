@@ -140,7 +140,10 @@ export default {
   },
   methods: {
     updateParent() {
-      this.$emit("update-shared-data", this.data);
+      this.$emit("update-shared-data", {
+        data: this.data,
+        errors: this.errors,
+      });
     },
     checkValidationForm(nameField) {
       this.errors[nameField] = this.data[nameField] == "" ? true : false;
